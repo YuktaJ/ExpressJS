@@ -1,17 +1,22 @@
-const express = require("express");
-const app = express();
 const path = require('path');
-const rootPath = require('./helper/path');
+
+const express = require('express');
+
+const app = express();
+
+app.set('view engine', 'ejs');
+app.set('views', 'views');
+
 const adminRoutes = require('./routes/admin');
 const shopRoutes = require('./routes/shop');
-const contactRoutes = require('./routes/contact');
+const errorController = require('./controllers/error404');
+
 app.use(express.urlencoded({ extended: false }));
+app.use(express.static(path.join(__dirname, 'public')));
 
-app.use(adminRoutes);
+app.use('/admin', adminRoutes);
 app.use(shopRoutes);
-app.use(contactRoutes);
 
-app.use((req, res, next) => {
-    res.status(404).sendFile(path.join(rootPath, 'views', 'error.html'));
-});
+app.use('/', errorController.errorPage);
+
 app.listen(3000);
