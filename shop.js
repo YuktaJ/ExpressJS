@@ -1,8 +1,10 @@
-const express = require("express");
-const router = express.Router();
+const express = require('express');
+const rootPath = require('../helper/path');
+const path = require('path');
+const routes = express.Router();
 
-router.get("/",(req,res,next)=>{
-    res.send("<h1>Hello from express!</h1>");
-})
+routes.get("/", (req, res, next) => {
+    res.sendFile(path.join(rootPath, 'views', 'shop.html'));
+});
 
-module.exports = router;
+module.exports = routes;
