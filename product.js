@@ -1,30 +1,48 @@
-const Product = require('../models/product')
+const fs = require('fs');
+const path = require('path');
 
-exports.getAddProduct = (req, res, next) => {
-    res.render('add-product', {
-        pageTitle: 'Add Product',
-        path: '/admin/add-product',
-        formsCSS: true,
-        productCSS: true,
-        activeAddProduct: true
+const p = path.join(
+  path.dirname(process.mainModule.filename),
+  'data',
+  'products.json'
+);
+
+const getProductsFromFile = cb => {
+  fs.readFile(p, (err, fileContent) => {
+    if (err) {
+      cb([]);
+    } else {
+      cb(JSON.parse(fileContent));
+    }
+  });
+};
+
+module.exports = class Product {
+  constructor(title, imageUrl, description, price) {
+    this.title = title;
+    this.imageUrl = imageUrl;
+    this.description = description;
+    this.price = price;
+  }
+
+  save() {
+    this.id = Math.random().toString();
+    getProductsFromFile(products => {
+      products.push(this);
+      fs.writeFile(p, JSON.stringify(products), err => {
+        console.log(err);
+      });
     });
-}
+  }
 
-exports.postAddProducts = (req, res, next) => {
-    const product = new Product(req.body.title);
-    product.save();
-    res.redirect('/');
-}
+  static fetchAll(cb) {
+    getProductsFromFile(cb);
+  }
 
-exports.getProduct = (req, res, next) => {
-    const products = Product.fetchAll((products) => {
-        res.render('shop', {
-            prods: products,
-            pageTitle: 'Shop',
-            path: '/',
-            hasProducts: products.length > 0,
-            activeShop: true,
-            productCSS: true
-        });
-    });
-}
+  static findById(id, cb) {
+    getProductsFromFile(products => {
+      const product = products.find(p => p.id === id);
+      cb(product);
+    })
+  }
+};
